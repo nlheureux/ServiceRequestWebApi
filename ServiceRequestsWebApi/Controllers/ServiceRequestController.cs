@@ -11,6 +11,9 @@ namespace ServiceRequestsWebApi.Controllers
     [ApiController]
     public class ServiceRequestController : ControllerBase
     {
+        private const string INVALID_ID = "Invalid id.";
+        private const string INVALID_STATUS = "Invalid status. Status must be either Canceled, Complete, " +
+            "Created, InProgress, or NotApplicable";
         private readonly ServiceRequestContext _context;
 
         public ServiceRequestController(ServiceRequestContext context)
@@ -22,7 +25,10 @@ namespace ServiceRequestsWebApi.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ServiceRequest>>> GetserviceRequests()
         {
-            return await _context.serviceRequests.ToListAsync();
+            if (_context.serviceRequests.Any()) {
+                return await _context.serviceRequests.ToListAsync();
+            }
+            return NoContent();
         }
 
         // GET: api/ServiceRequest/5
@@ -47,7 +53,12 @@ namespace ServiceRequestsWebApi.Controllers
         {
             if (id != serviceRequest.id)
             {
-                return BadRequest();
+                return BadRequest(INVALID_ID);
+            }
+
+            if (!GetCurrentStatus().Contains(serviceRequest.currentStatus))
+            {
+                return BadRequest(INVALID_STATUS);
             }
 
             _context.Entry(serviceRequest).State = EntityState.Modified;
@@ -77,10 +88,17 @@ namespace ServiceRequestsWebApi.Controllers
         [HttpPost]
         public async Task<ActionResult<ServiceRequest>> PostServiceRequest(ServiceRequest serviceRequest)
         {
-            _context.serviceRequests.Add(serviceRequest);
-            await _context.SaveChangesAsync();
+            if (GetCurrentStatus().Contains(serviceRequest.currentStatus))
+            {
+                _context.serviceRequests.Add(serviceRequest);
+                await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetServiceRequest", new { id = serviceRequest.id }, serviceRequest);
+                return CreatedAtAction("GetServiceRequest", new { id = serviceRequest.id }, serviceRequest);
+            } else
+            {
+                return BadRequest(INVALID_STATUS);
+            }
+
         }
 
         // DELETE: api/ServiceRequest/5
@@ -102,6 +120,17 @@ namespace ServiceRequestsWebApi.Controllers
         private bool ServiceRequestExists(Guid id)
         {
             return _context.serviceRequests.Any(e => e.id == id);
+        }
+
+        private List<string> GetCurrentStatus()
+        {
+            List<String> currentStatus = new List<string>();
+            currentStatus.Add(nameof(CurrentStatus.Canceled));
+            currentStatus.Add(nameof(CurrentStatus.Complete));
+            currentStatus.Add(nameof(CurrentStatus.Created));
+            currentStatus.Add(nameof(CurrentStatus.InProgress));
+            currentStatus.Add(nameof(CurrentStatus.NotApplicable));
+            return currentStatus;
         }
     }
 }

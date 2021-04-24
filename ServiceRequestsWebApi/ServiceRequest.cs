@@ -18,13 +18,6 @@ namespace ServiceRequestsWebApi
 
         public DateTime lastModifiedDate { get; set; }
 
-        enum currentStatus
-        {
-            NotApplicable,
-            Created,
-            InProgress,
-            Complete,
-            Canceled
-        };
+        public string currentStatus { get; set; }
     }
 }
