@@ -4,7 +4,7 @@ namespace ServiceRequestsWebApi
 {
     public class ServiceRequest
     {
-       public Guid id { get; set; }
+        public Guid id { get; set; }
 
         public string buildingCode { get; set; }
 
