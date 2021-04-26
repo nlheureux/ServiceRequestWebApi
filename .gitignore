@@ -1,5 +1,6 @@
 ServiceRequestsWebApi/C:\\servicerequest.db
 ServiceRequestsWebApi/Migrations/
+ServiceRequestsTest/Migrations/
 # globs
 Makefile.in
 *.userprefs
